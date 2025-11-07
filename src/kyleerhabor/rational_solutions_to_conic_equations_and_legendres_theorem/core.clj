@@ -66,7 +66,7 @@
    :c (* p c)})
 
 (defn square-free-normal-form [{:keys [a b c]
-                                 :as coefs}]
+                                :as coefs}]
   (if (= 1.0 (:d (square-free (* a b c))))
     {:a a
      :b b
@@ -78,9 +78,11 @@
 
 (defn square-mod? [n m]
   (or
+    ;; I don't think this should be true for our program, but just in case...
     (= m 0)
-    (let [reduced (mod n m)]
-      (some #(= reduced (mod (square %) m)) (range m)))))
+    ;; There exists some x such that x^2 ≡ n' (mod m)
+    (let [n' (mod n m)]
+      (some #(= n' (mod (square %) m)) (range m)))))
 
 (defn theorem [a b c]
   (let [;; Before: aX^2 + bY^2 = cZ^2
@@ -88,7 +90,8 @@
         ;;   aX^2 + bY^2 - cZ^2 = 0
         ;;   aX^2 + bY^2 + c'Z^2 = 0 where c' = -c
         c (- c)
-        ;; Corollary 3.
+        ;; Corollary 3. Suppose d | a and d | b. Then the equation aX^2 + bY^2 + cZ^2 = 0 has a non-trivial Z-solution
+        ;; if and only if (a/d)X^2 + (b/d)Y^2 + cdZ^2 = 0 does.
         gcd (gcd a b c)
         a (square-free (/ a gcd))
         b (square-free (/ b gcd))
