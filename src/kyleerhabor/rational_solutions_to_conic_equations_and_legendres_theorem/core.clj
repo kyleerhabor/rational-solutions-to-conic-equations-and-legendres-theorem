@@ -42,16 +42,13 @@
       (lazy-seq (sieve (remove #(divides? e %) (rest s)))))))
 
 (defn arrange-coefficients [p {:keys [a b c]}]
-  (cond
-    (and (divides? p a) (divides? p b)) {:a a
-                                         :b b
-                                         :c c}
-    (and (divides? p b) (divides? p c)) {:a c
-                                         :b b
-                                         :c a}
-    (and (divides? p a) (divides? p c)) {:a a
-                                         :b c
-                                         :c b}))
+  (let [pa (divides? p a)
+        pb (divides? p b)
+        pc (divides? p c)]
+    (cond
+      (and pa pb) {:a a :b b :c c}
+      (and pb pc) {:a c :b b :c a}
+      (and pa pc) {:a a :b c :c b})))
 
 (defn prepare-transformation [p coefs]
   {:coefficients (arrange-coefficients p coefs)
