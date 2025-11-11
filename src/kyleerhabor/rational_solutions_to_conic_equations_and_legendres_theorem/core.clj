@@ -21,7 +21,7 @@
 
 (defn square-free [n]
   ;; Corollary 2. Suppose d^2 | a. Then the equation aX^2 + bY^2 + cZ^2 = 0 has a non-trivial Z-solution if and only if
-  ;; (a/d2^)X^2 + bY^2 + cZ^2 = 0 does.
+  ;; (a/d^2)X^2 + bY^2 + cZ^2 = 0 does.
   (let [n' (abs n)
         s (->>
             (range (math/floor (math/sqrt n')) 0 -1)
@@ -30,18 +30,16 @@
             first)]
     (update s :n * (math/signum n))))
 
+(defn divides? [a b]
+  (zero? (mod b a)))
+
 ;; Generates primes.
 ;;
 ;; https://clojuredocs.org/clojure.core/lazy-seq#example-542692d3c026201cdc326ff1
 (defn sieve [s]
-  (cons
-    (first s)
-    (lazy-seq (sieve (filter
-                       #(not= 0 (mod % (first s)))
-                       (rest s))))))
-
-(defn divides? [a b]
-  (zero? (mod b a)))
+  (let [e (first s)]
+    (cons e
+      (lazy-seq (sieve (remove #(divides? e %) (rest s)))))))
 
 (defn arrange-coefficients [p {:keys [a b c]}]
   (cond
@@ -71,7 +69,8 @@
     {:a a
      :b b
      :c c}
-    (let [primes (take-while #(<= % (/ (max (abs a) (abs b) (abs c)) 2)) (sieve (iterate inc 2)))
+    (let [limit (/ (max (abs a) (abs b) (abs c)) 2)
+          primes (take-while #(<= % limit) (sieve (iterate inc 2)))
           permut (first (filter :coefficients (map #(prepare-transformation % coefs) primes)))
           coefs (transform (:p permut) (:coefficients permut))]
       (recur coefs))))
@@ -79,7 +78,7 @@
 (defn square-mod? [n m]
   (or
     ;; I don't think this should be true for our program, but just in case...
-    (= m 0)
+    (zero? m)
     ;; There exists some x such that x^2 ≡ n' (mod m)
     (let [n' (mod n m)]
       (some #(= n' (mod (square %) m)) (range m)))))
