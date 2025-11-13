@@ -80,13 +80,28 @@
     (let [n' (mod n m)]
       (some #(= n' (mod (square %) m)) (range m)))))
 
-(defn theorem [a b c]
-  (let [;; Before: aX^2 + bY^2 = cZ^2
-        ;; After:
-        ;;   aX^2 + bY^2 - cZ^2 = 0
-        ;;   aX^2 + bY^2 + c'Z^2 = 0 where c' = -c
-        c (- c)
-        ;; Corollary 3. Suppose d | a and d | b. Then the equation aX^2 + bY^2 + cZ^2 = 0 has a non-trivial Z-solution
+(defn proposition-1 [a b c]
+  (let [;; Corollary 1. The equation aX^2 + bY^2 + cZ^2 = 0 has a non-trivial Z-solution if and only if acX^2 + bcY^2 + Z^2 = 0 does.
+        a (* a c)
+        b (* b c)
+        c 1 ; Unused, but who cares?
+        ;; Proposition 1. If Z^2 = aX^2 + bY^2 has a non-trivial Z-solution, then
+        ;; (i) at least one of a and b is positive,
+        ;; (ii) a is a square modulo |b|,
+        ;; (iii) b is a square modulo |a|, and
+        ;; (iv) −(a/d)(b/d) is a square modulo d where d is the GCD of a and b.
+        a (- a)
+        b (- b)
+        d (tower/gcd a b)
+        r (or
+            (pos? a) (pos? b)
+            (square-mod? a (abs b))
+            (square-mod? b (abs a))
+            (square-mod? (- (* (/ a d) (/ b d))) d))]
+    r))
+
+(defn proposition-2 [a b c]
+  (let [;; Corollary 3. Suppose d | a and d | b. Then the equation aX^2 + bY^2 + cZ^2 = 0 has a non-trivial Z-solution
         ;; if and only if (a/d)X^2 + (b/d)Y^2 + cdZ^2 = 0 does.
         gcd (gcd a b c)
         a (square-free (/ a gcd))
@@ -95,17 +110,27 @@
         {:keys [a b c]} (square-free-normal-form {:a (:n a)
                                                   :b (:n b)
                                                   :c (:n c)})
-        ;; Corollary 4 (Legendre’s Theorem). Suppose a, b, c ∈ Z are such that abc is a non-zero square-free integer.
-        ;; Then the equation aX^2 + bY^2 + cZ^2 = 0 has a non-trivial Z-solution if and only if
-        ;; (i) a, b, c do not all have the same sign,
-        ;; (iia) −bc is a square modulo |a|,
-        ;; (iib) −ac is a square modulo |b|, and
-        ;; (iic) −ab is a square modulo |c|.
+          ;; Corollary 4 (Legendre’s Theorem). Suppose a, b, c ∈ Z are such that abc is a non-zero square-free integer.
+          ;; Then the equation aX^2 + bY^2 + cZ^2 = 0 has a non-trivial Z-solution if and only if
+          ;; (i) a, b, c do not all have the same sign,
+          ;; (iia) −bc is a square modulo |a|,
+          ;; (iib) −ac is a square modulo |b|, and
+          ;; (iic) −ab is a square modulo |c|.
         r (and
             (not= 3.0 (abs (+ (math/signum a) (math/signum b) (math/signum c))))
             (or (square-mod? (- (* b c)) (abs a)) false)
             (or (square-mod? (- (* a c)) (abs b)) false)
             (or (square-mod? (- (* a b)) (abs c)) false))]
+
+    r))
+
+(defn theorem [a b c]
+  (let [;; Before: aX^2 + bY^2 = cZ^2
+        ;; After:
+        ;;   aX^2 + bY^2 - cZ^2 = 0
+        ;;   aX^2 + bY^2 + c'Z^2 = 0 where c' = -c
+        c (- c)
+        r (and (proposition-1 a b c) (proposition-2 a b c))]
     r))
 
 (comment
