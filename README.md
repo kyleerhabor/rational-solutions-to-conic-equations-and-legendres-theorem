@@ -14,4 +14,7 @@ git clone https://github.com/kyleerhabor/rational-solutions-to-conic-equations-a
 3. Run the program:
 ```sh
 clojure -M -m kyleerhabor.rational-solutions-to-conic-equations-and-legendres-theorem.core --help
+
+# [a]X^2 + [b]Y^2 = [c]Z^2
+clojure -M -m kyleerhabor.rational-solutions-to-conic-equations-and-legendres-theorem.core -a [a] -b [b] -c [c]
 ```
